@@ -1,26 +1,40 @@
-name: Firebase Deploy
+name: Deploy Firebase Functions
 
+# Trigger this workflow on pushes to main or your github-actions branch
 on:
   push:
     branches:
-      - main  # or your branch name
+      - main
+      - github-actions
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out your repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '18'  # Match the Node version your functions require
 
+      # Step 3: Install Firebase Functions dependencies
       - name: Install dependencies
-        run: npm install
-        working-directory: ./functions
+        run: |
+          cd functions
+          npm install
 
+      # Step 4: Install Firebase CLI globally
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      # Step 5: Deploy Firebase Functions
       - name: Deploy to Firebase
-        run: npx firebase deploy --only functions --token ${{ secrets.FIREBASE_TOKEN }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase deploy --only functions --token $FIREBASE_TOKEN
